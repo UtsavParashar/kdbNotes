@@ -15,5 +15,13 @@ quote:([] date:asc 1000000?{x(&)1<x mod 7}2019.12.01+(!)31; time:asc 1000000?09:
 update bid:?[`GOOG=sym;100.+bid;?[`AMZN=sym;200.+bid;bid]]from `quote;
 update ask:bid-(rand 0.01*(!)20) from `quote;
 
+///// Get the count of trade and quote for each day
+t: select tradecount:count i by date from trade;
+q: select quotecount:count i by date from quote;
+t lj q;
+
+/// For commonly used functions/fields it is always good to create a partition for them and fetch data from there as with relatively low storage we can get significant performance benefits.
+/- Open High Low Close table
+{ohlc:: 0!select open:first price, high:max price, low:min price, close:last price, vwap:size wavg price by sym from trade where date=x; .Q.dpft[`:/Users/utsav/ag/;x;`sym;`ohlc];}each exec distinct date from trade;
 
 
