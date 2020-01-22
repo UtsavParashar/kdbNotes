@@ -24,6 +24,9 @@ $ - string --> ($)0b~1b
 % - inv --> (%)10
 , - enlist --> (,)5
 
+0: - read0 --> (0:)`:/file/path/name
+1: - read1 --> (1:)`:/file/path/name
+
 
 /- functions definitions
 {(*)1?x} - rand --> {*1?x}100
