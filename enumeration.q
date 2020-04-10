@@ -2,7 +2,7 @@ Enumeration is basically divided into three forms:
 
 1. ? -> Enum Extend -> best of all.
 2. $ -> Enumerate ---> has certain limitations.
-3. ! -> Enumeration -> Used for a edge case.
+3. ! -> Enumeration -> Used for an edge case.
 
 Case 1: Best Case - Work for both ? and $
     x:10?`GOOG`AMZN`FB;
