@@ -2,7 +2,7 @@ Enumeration is basically divided into three forms:
 
 1. ? -> Enum Extend -> best of all.
 2. $ -> Enumerate ---> has certain limitations.
-3. ! -> Enumeration -> Used for an edge case.
+3. ! -> Enumeration -> Used for an edge case.(Case 4,5)
 
 Case 1: Best Case - Work for both ? and $
     x:10?`GOOG`AMZN`FB;
@@ -28,7 +28,17 @@ Case 4: If y(domain) is not passed as symbol then enumerating it returns the ind
     en:y?x; /- 0 1 0 0 2 0 2 2j
     `y!en; /- `FB`GOOG`FB`FB`AMZN`FB`AMZN`AMZN
 
-Case 5: Store distinct values in a file.
+Case 5: When you want to enumerate the values of range(x) with its index then we can go for !.
+    q)x:5?`GOOG`AMZN`FB
+    q)y:(?)x
+    q)z:`y$x
+    q)z /- `y$`FB`GOOG`AMZN`AMZN`FB
+    q)`int$`y$x /- 0 1 2 2 0i
+    q)a:`y!0 1 2 2 0
+    q)a /- `y$`FB`GOOG`AMZN`AMZN`FB
+    q)z~a /- 1b
+
+Case 6: Store distinct values in a file.
     x:`g#8?`GOOG`AMZN`FB;
     y:(?)x;
     `:en:`y?x /- a file named y is created in CWD with values `FB`GOOG`AMZN
