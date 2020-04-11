@@ -64,4 +64,14 @@ Foreign Key:
     q)update sym:`quote$sym from `t
     q)select sym, sym.px, vol from t
 
-    14.
+Compound Foreign Key:
+    1. Compound foreign key is a foreign key where the primary keys conists of more than one column and they are linked to one column of the foreign key.
+    q)kt:([sym:`GOOG`AMZN; ex:`NSE`BSE] px:100 200)
+    q)t:([] tick:`kt$((`GOOG`NSE);(`AMZN`BSE)); vol:1000 2000)
+    2. Other way of doing same is:
+    q)kt:([sym:`GOOG`AMZN; ex:`NSE`BSE] px:100 200)
+    q)t:([] tick:`kt$(); vol:`long$())
+    q)`t insert (`kt$(`GOOG`NSE);1000)
+    3. Note in above both insertion and in compound foreign key, the foreign key type is of long type and not the symbol type because it stores the index value.
+
+
