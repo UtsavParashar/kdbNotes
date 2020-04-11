@@ -74,4 +74,13 @@ Compound Foreign Key:
     q)`t insert (`kt$(`GOOG`NSE);1000)
     3. Note in above both insertion and in compound foreign key, the foreign key type is of long type and not the symbol type because it stores the index value.
 
-
+Remove a Foreign key:
+    1. Simple foreign key - value can be used to remove a simple foreign key.
+    update tick:value tick from `t
+    This will replace the reference by the actual value of the tick and the link between the tables will be deleted.
+    2. Below function can be used to remove more than one foreign keys from a table:
+        removeKeys:{[x]
+          v[i]:value each (v:value flip x)i:where not null(0!meta x)`f;
+          flip (cols x)!v };
+    
+    3. Calling the value function on a complex foreign key column will remove the table mapping but will leave the previously enumerated column intact as a list of longs.
