@@ -33,6 +33,11 @@ Foreign Key:
       i.e there is implicit left join between t and kt.
         q) t lj kt
         q)(t lj kt)~(select ids, vol, ids.px from t) /- 1b
+        Foreign relation is performant and consumes less memory.
+        q)\t:1000000 t lj kt
+        4262
+        q)\t:1000000 select id, vol, id.px from t
+        1391
 
     9. The implicit join with the dot notation is powerful and convenient when your tables are in normal form and there are multiple foreign key relations.
         Eg:
@@ -84,3 +89,11 @@ Remove a Foreign key:
           flip (cols x)!v };
     
     3. Calling the value function on a complex foreign key column will remove the table mapping but will leave the previously enumerated column intact as a list of longs.
+
+Linked Columns:
+    Links can be applied to two or more tables whether the tables are in memory, splayed on disk or even in different kdb+ databases.
+
+Simple Linked Columns:(NOT COMPLETE YET - https://code.kx.com/q/wp/foreign-keys/#simple-linked-columns)
+    Using integers index with the Enumeration operator(!) we can establish the connection once we have mapped each row in referencing table(eq) to the corresponding row number in the referenced table(f)
+    q)eq:([]sym:5#`A`B`C`D`E;size:5?10000;mtm:5?2.)
+    q)f:([sym:`A`B`C]earningsPerShare:1.2 2.3 1.5;bookValPerShare:2.1 2.5 3.2 )
