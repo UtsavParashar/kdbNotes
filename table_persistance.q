@@ -84,3 +84,29 @@ A table can be persisted in 4 ways:
     3. If no sym list exists in memory or on disk an empty one is created.
     4. All symbols in all symbol columns of the table are conditionally enumerated over the sym list in memory.
     5. Once the enumeration is complete the sym list in memory is serialized to the root and the file is unlocked.
+
+    Manually do the enumeration: https://stackoverflow.com/questions/61295947/usage-of-amend-to-create-sym-vector-manually-in-kdb
+    q)t:([] s1:`a`b`c; v:10 20 30; s2:`x`y`z)
+    q)`:/Users/utsav/db/t/ set @[t;exec c from meta t where "s"=t;`sym?]
+
+    2. We can splay a compound column like string or any other column with more than one type.
+    q)`:/Users/utsav/db/t/ set ([] c:(1;1,1;`1))
+    q)`:/Users/utsav/db/t/ set ([] ci:(1 2 3; enlist 4; 5 6); cstr:("abc";enlist"d";"ef"))
+
+    3. We can observe that two or more files created in case of compound columns. Where the #(sharp) file contains the binary data of the original list in flattened form and non sharp file is a serialized q list of integers representing the length of each sublist in the original list.
+        The purpose of writing compound columns as two files is to speed up operations against them when the splayed table is mapped into memory. Of course, the processing won’t be as fast as for a simple column, but it is still plenty fast for most purposes.
+        One question that always arises when designing a kdb+ database is whether to store text data as symbols or strings. The advantage of symbols is that they have atomic semantics and, since they are integers under the covers once they are enumerated, processing is quite fast. The main issue with symbols is that if you make all text into symbols, your sym list gets enormous and the advantages of enumeration disappear.
+        In contrast, strings do not pollute the sym list with one-off instances and are reasonably fast. The disadvantage is that they are not first class and you must revert to teenage years by using like to match them.
+
+    RECOMMENDATION:
+    Only make text columns into symbols when the fields will be drawn from a small, reasonably stable domain and there is significant repetition in their use. When in doubt, start with a string column. It is much easier to convert a string column to symbols that it is to remove symbols from the sym list.
+
+    4. meta is described based on first row of the table.
+    q)meta ([] c:(1 2 3 ;1,1;`1))
+    c| t f a
+    -| -----
+    c| J
+
+
+
+
