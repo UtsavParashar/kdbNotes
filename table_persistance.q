@@ -107,6 +107,12 @@ A table can be persisted in 4 ways:
     -| -----
     c| J
 
+ Basic Operations on Splayed Tables:
+ -----------------------------------
+ q)t:([] sym:10?`GOOG`AMZN`FB; px:10?100.; size:10?10000)
+ q)`:/Users/utsav/db/t/ set .Q.en[`:/Users/utsav/db;]t
+
+
 
 
 
