@@ -112,6 +112,47 @@ A table can be persisted in 4 ways:
  q)t:([] sym:10?`GOOG`AMZN`FB; px:10?100.; size:10?10000)
  q)`:/Users/utsav/db/t/ set .Q.en[`:/Users/utsav/db;]t
 
+    delete t from `. /- so that it can be loaded and worked upon
+
+1. Table can be loaded in two ways:
+    q /Users/utsav/db/t
+    \l /Users/utsav/db/t
+    Interestingly, it is called loading the table but actually none of the table are brought into the memory in this step.
+
+2. The illusion that the table is actually in memory is convincing, many fundamental table operations work on on splayed tables like:
+    \a
+    tables[]
+    meta t
+    cols t
+    type t
+    count t
+
+3. We can extract columns using dot(.) notations from a splayed table along with symbol indexing.
+    t.sym /- dot notation - `GOOG`AMZN`FB`AMZN`FB`GOOG`GOOG`FB`GOOG`AMZN
+    t`sym /- symbol indexing - `GOOG`AMZN`FB`AMZN`FB`GOOG`GOOG`FB`GOOG`AMZN
+
+4. We can index records from splayed tables.
+    t[0]
+    t 0
+    t@0
+
+5. We can run both select and exec on splayed tables.(This is in constrast with partitioned tables where we can use only select).
+    select first px from t
+    exec from t
+    exec first px from t
+    first exec px from t
+
+Operations on a splayed directory:
+----------------------------------
+1. The table operations against the file handle of a splayed table are:
+    select, exec, xasc, `attr#,
+
+    select from `:/Users/utsav/db/t
+    exec from `:/Users/utsav/db/t
+    `sym xasc `:/Users/utsav/db/t
+    @[`:/Users/utsav/db/t;`sym;`p#]
+    \l /Users/utsav/db/t
+    meta t
 
 
 
