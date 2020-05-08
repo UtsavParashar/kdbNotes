@@ -154,6 +154,23 @@ Operations on a splayed directory:
     \l /Users/utsav/db/t
     meta t
 
+2. If we update a table then it's affect is visible only in the workspace and not on the disk.
+    t:([] sym:10?`GOOG`AMZN`FB; px:10?10.; vol:10?1000);
+    `:/Users/utsav/db/t/ set .Q.en[`:Users/utsav/db;t]
+    delete t from `.
+    \l /Users/utsav/db/t
+    update vol:100000 from `t where px<2
+    \l /Users/utsav/db/t
+    t
+
+    Hence an imp poing about KDB, IT IS NOT POSSIBLE TO USE BUILD IN OPERATIONS TO UPDATE DATA PERSISTED IN SPLAYED TABLES.
+    You read that correctly. Kdb+ is intended to store data that is not updated or deleted once it has been written. We shall see in the next section how to append to a splayed table, which makes it possible to process updates and deletes in a bitemporal fashion, but this capability is not available out of the box.
+
+Appending to a splayed tables:
+------------------------------
+
+
+
 
 
 
