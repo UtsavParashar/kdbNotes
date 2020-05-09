@@ -168,7 +168,10 @@ Operations on a splayed directory:
 
 Appending to a splayed tables:
 ------------------------------
-
+1. Insert does not work with splayed tables, but in order to append rows to a splayed table on disk, we can use upsert this is because upsert behaves as insert in case of non-keyed tables and keyed tables cannot be splayed.
+    `:/Users/utsav/db/t/ set .Q.en[`:/Users/utsav/db;]([] s1:`a`b`c;v:10 20 30; s2:`x`y`z);
+    `:/Users/utsav/db/t/  upsert .Q.en[`:/Users/utsav/db;] ([] s1:`d`e; v:40 50; s2:`u`v);
+    `:/Users/utsav/db/t/  upsert .Q.en[`:/Users/utsav/db;] enlist `s1`v`s2!(`f;60;`t);
 
 
 
