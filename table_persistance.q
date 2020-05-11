@@ -172,6 +172,22 @@ Appending to a splayed tables:
     `:/Users/utsav/db/t/ set .Q.en[`:/Users/utsav/db;]([] s1:`a`b`c;v:10 20 30; s2:`x`y`z);
     `:/Users/utsav/db/t/  upsert .Q.en[`:/Users/utsav/db;] ([] s1:`d`e; v:40 50; s2:`u`v);
     `:/Users/utsav/db/t/  upsert .Q.en[`:/Users/utsav/db;] enlist `s1`v`s2!(`f;60;`t);
+    `:/Users/utsav/db/t/  upsert .Q.en[`:/Users/utsav/db;] flip `s1`v`s2!flip ((`g;70;`r);(`h;80;`s));
+    \l /Users/utsav/db
+    select from t
+
+2. Hence, upsert can be used to build large splayed tables incrementally. Below example can be used to splayed table step by step as batches of new records arrive.
+    fbatch:{[rt;tn;recs] hsym[`$rt,"/",tn,"/"] upsert .Q.en[hsym `$rt;]recs};
+    fdayrecs:{([] dt:x; ti:asc 100?24:00:00; sym:100?`ibm`aapl; qty:100*1+100?1000)};
+    pappday:fbatch["/Users/utsav/db";"t";];
+    pappday fdayrecs 2020.05.01;
+    pappday fdayrecs 2020.05.02;
+    pappday fdayrecs 2020.05.03;
+    \l /Users/utsav/db
+    select from t
+
+Manual operations on a splayed directory:
+-----------------------------------------
 
 
 
