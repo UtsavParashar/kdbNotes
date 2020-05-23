@@ -44,7 +44,7 @@ Case 6: Store distinct values in a file.
     `:en:`y?x /- a file named y is created in CWD with values `FB`GOOG`AMZN
 
 Points To Remeber:
-1. From an enumerated variable domain and values can be extracted using key and values function.
+1. From an enumerated variable domain and values can be extracted using key and value function.
     key en; /- `y
     value en; /- `FB`GOOG`FB`FB`AMZN`FB`AMZN`AMZN
 

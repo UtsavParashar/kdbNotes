@@ -188,7 +188,12 @@ Appending to a splayed tables:
 
 Manual operations on a splayed directory:
 -----------------------------------------
+1. Though there are no built in operations to update splayed tables on disk, we can perform such operations by manipulating the serialized files.
 
+`:/Users/utsav/db/t/ set ([] ti:09:30:00 09:31:00; p:101.5 33.5)
+`:/Users/utsav/db/t/p set .[get `:/Users/utsav/db/t/p; where 09:31:00=get `:/Users/utsav/db/t/ti; :;42.0]
+\l /Users/utsav/db
+select from t
 
 
 
