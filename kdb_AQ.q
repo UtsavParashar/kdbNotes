@@ -33,3 +33,9 @@ Virtual column i within a table represents the index of a row(in this case i has
     select i from table
 
 Foreign key is a field in one table, that uniquely identifies row in another table.
+ti:([id:1 2 3 4]; sym:`a`b`c`d);
+t:([] id:`ti$id; px:100 200 300 400)
+meta t
+select id, id.sym, px from t
+
+Keyed table: is a dictionary mapping of a table of key records and a table of column records. It can be considered that keyed columns are a key of records and rest of the columns are corresponding values.
