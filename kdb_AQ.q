@@ -38,4 +38,21 @@ t:([] id:`ti$id; px:100 200 300 400)
 meta t
 select id, id.sym, px from t
 
+Foreign key provides refrential integrity meaning that values in foreign key columns must present in primary key columns meaning before inserting a value in foreign key column first check that the value is present in primary key column.
+Primary key of foreign key must be keyed.
 Keyed table: is a dictionary mapping of a table of key records and a table of column records. It can be considered that keyed columns are a key of records and rest of the columns are corresponding values.
+Like dictionaries arithmetic operations can be performed on keyed tables.
+t:([a:`a`b`c`b`e] b:1 2 3 4 5; c:3 4 5 6 70);
+t1:([a:`a`b`c`b] b:10 20 30 40; c:30 40 50 60);
+t+t1
+
+With unkeyed tables we can perform arithmetic operation if the table consists of numeric fields and row counts match else it throws length error.
+t1:([] a:1 2 3 4; b:10 20 30 40);
+t2:([] a:10 20 30; b:100 200 300);
+t1+t2
+
+Extract rows and columns from tables
+t1[2] /- fetch 2nd row for each column
+t1[`a] /- fetch column a from the table t1
+
+
