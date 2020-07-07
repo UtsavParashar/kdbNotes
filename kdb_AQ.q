@@ -55,4 +55,56 @@ Extract rows and columns from tables
 t1[2] /- fetch 2nd row for each column
 t1[`a] /- fetch column a from the table t1
 
+Functions:
+----------
+Function types -
+Implicit Functions - x,y and z as arguments
+Explicit Functions - user defined arguments
+Niladic Function - {:1+1}[]
+Monadic Function - {1+x}[1]
+Diadic Function - {x+y}[1;1]
+Triadic Function - {x+y*z}[1;1;1]
+
+Local scope hides the global scope - a:10;{a:20; :a+1}[] /- 21
+To set global variable in a function use set operator of ::(view,identity) operator.
+using set --> a:10; {`a set 20; :a}[] /- value of a is now 20 in both local and global space
+using :: --> a:10;{a::20; :a}[]; 0N!a; /- value of a is now 20 in both local and global space
+difference between set and :: --> set can be used to assign value to some other variable to which original value is pointing(confused, see below example)
+t:100; a:`t; {a set 10; :a}[]; 0N!t; /- a still points to `t but t now have value as 10
+
+Variable overload:
+A function can have maximum of 8 arguments, if the arguments exceeds 8 then the function throws 'param error.
+This can be overcome using a single list or dictionary argument.
+{[a] sum a}[(1 2 3 4)] /- 10
+{[a] sum a}[`a`b`c`d!1 2 3 4] /- 10
+
+Alternatively, we can use some required/mandatory arguments and an optional list/dict arguments
+{[a;b;c] a+b+$[count c; sum c; 0]}[1;2;()] /- 3
+{[a;b;c] a+b+$[count c; sum c; 0]}[1;2;3] /- 6
+{[a;b;c] a+b+$[count c; sum c; 0]}[1;2;3 4 5] /- 15
+{[a;b;c] a+b+$[count c; sum c; 0]}[1;2;`a`b`c`d!1 2 3 4] /- 13
+
+type of function is 100h --> type {:1+1} /- 100h
+
+get/value function is used to get the structure of the function
+get {[a;b;c] d:a+b+c+12; .up.kt:10; 100}
+0xa0634162416141030902a10b04810002a20004 /- byte representation of a function
+`a`b`c                                   /- arguments
+enlist `d                                /- local variable
+``.up.kt                                 /- global variable
+12j                                      /- Constant
+10j                                      /- Constant
+100j                                     /- Constant
+"{[a;b;c] d:a+b+c+12; .up.kt:10; 100}"   /- String representation
+
+We can also use below to get the arguments of the function
+value[{[a;b;c] d:a+b+c+12; .up.kt:10; 100}][1]
+
+Calling function from another function:
+f:{x+1}; g:{f[x]*2}; g[10] /- 22;
+    g[10 20 30] /- 22 42 62j
+
+Function within a function:
+{f:{x+1}; f[x]*2}[10] /- 22j
+{{x+1}[x]*2}[10] /- 22j
 
