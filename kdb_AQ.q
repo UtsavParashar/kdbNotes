@@ -9,9 +9,9 @@ A dictionary is a mapping between a domain list(key) and a range list(value) -- 
 It is a foundation of tables(table is a list of dictionaries)
 Dictionaries are type safe.
 d:`a`b`c!(1 2 3;4 5 6;7 8 9);
-d[`a;0]:3f /- 'type errpr since d[`a] is of long type hence assigning float value will throw type error.
+d[`a;0]:3f /- 'type error since d[`a] is of long type hence assigning float value will throw type error.
 Arithmatic operators act on range list(values) and not on domain list(keys).
-d*2 /- It will double all the elements in range list(value) but not affect domin list(key) - `a`b`c!(2 4 6j;8 10 12j;14 16 18j)
+d*2 /- It will double all the elements in range list(value) but not affect domain list(key) - `a`b`c!(2 4 6j;8 10 12j;14 16 18j)
 
 Tables:
 A collection of named columns or a list of dictionaries is called table.
@@ -107,4 +107,75 @@ f:{x+1}; g:{f[x]*2}; g[10] /- 22;
 Function within a function:
 {f:{x+1}; f[x]*2}[10] /- 22j
 {{x+1}[x]*2}[10] /- 22j
+
+Projection: A projection of a function allows you to set/fix value for one or more variables.
+Process -
+f:{x+y};
+g:f[2]
+g[3] /- Output is 5, g is equivalent to {f[2]+y}
+type f /- 100h
+type g /- 104h
+
+A projection retains its definition even after the original function is redefined.
+f:{x+y+z}; /- Triadic function
+g:f[10];
+g /- {x+y+z}[10j]
+f:{x+y}; /- Diadic Function
+g /- {x+y+z}[10j], definition of g(projection) still remains the same.
+
+A projection of a projection is same as the projection of an original function.
+f:{x+y*z};
+g:f[10];
+g
+h:g[;20]
+h /- ({x+y+z}[10j];;20j)
+h[30] /- 610j
+
+Scripts:
+========
+Use \l to load a script. It run the script for us in q prompt.
+Use q script.q to run the q script in command prompt.
+; can be used to suppress the output of the script.
+Use show or 0N to force output from a script.
+show - show formats an object to a plain text and writes it to a standard output. / show {x+1}[2]
+type show 2 /- 101h i.e unary primitive
+1 + show 2 /- type error because we are trying to add two elements of different types.
+show - internal representation - k){1 .Q.s x;} i.e Q.s will also provide same output. (.Q.s - plain text)
+0N! or ![0N;] returns the object passed to it. /- 0N!{x+1}[2];
+type 0N!2 /- -7h
+1 + 0N!2 /- 3j
+
+How is 0N! different from show?
+0N! can be used for debugging,
+0N!{x+1}[2] /- output is 3 \n 3 because first time expression is displayed and second time 0N! exp is displayed.
+1+0N!2 /- Output 2 \n 3 i.e first exp 0N!2 is displayed and then exp 1+0N!2 is displayed
+1+0N!2; /- Output 2 because 3 is suppressed by ;
+
+Single line comment - /
+Multi line comment - / multiple lines in between \
+In multi line function each new line should start with a space.
+
+Command line args can be used to supply information to a script before it is executed. This can be achived by supplying arguments to a q command line i.e q script -key value
+This can be brought into q session using .z.x which returns command line arguments as a list os strings.
+Eg. q -key value / q session .z.x - output - "key" "value"
+Arguments prefixed with "-" are parsed as keys and the following arguments delimited by space are parsed as values.
+Eg q -k1 v1 -k2 v2
+    q) z.x
+    q) .Q.opt .z.x /- Convert the input args in the form of dictionary with key and value
+Script Example - myscript.q -print date /- based on input the script decides what needs to be displayed.
+    options:.Q.opt[.z.x]
+    if["date"~options[`print][0];variable:.z.d];
+    if["time"~options[`print][0];variable:.z.t];
+    variable
+
+The string values can also by typecasted into q datatypes for use in calculations and queries.
+.z.f can also be used to return the script name, supplied on the command line as a symbol. This can be useful which logging the script name.
+
+
+
+
+
+
+
+
 
