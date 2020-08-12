@@ -171,6 +171,36 @@ Script Example - myscript.q -print date /- based on input the script decides wha
 The string values can also by typecasted into q datatypes for use in calculations and queries.
 .z.f can also be used to return the script name, supplied on the command line as a symbol. This can be useful which logging the script name.
 
+Operations on Tables:
+=====================
+
+Debugging:
+==========
+
+Protected Execution:
+====================
+
+
+Joins:
+=======
+Join combine data together from different tables.
+Some joins are keyed i.e the join is matched on column in a keyed table.
+Some joins are asof i.e the time column in the first table dictates the time column in the second table.
+
+Vertical Join: ','
+--------------
+The vertical join ',' is used for joining simple lists.
+1 2 3, 4 5 6
+Similarly, it is used to join two tables vertically
+([] a:1 2 3; b:`a`b`c), ([] a:4 5; b:`d`e)
+([z:10 20 30] a:1 2 3; b:`a`b`c), ([z:10 30] a:4 5; b:`d`e)
+Both tables should have the same schema else the join will fail.
+
+Coalesce:
+---------
+Coalesce is similar to vertical join with a
+
+
 
 
 
