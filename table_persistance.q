@@ -15,9 +15,9 @@ A table can be persisted in 4 ways:
     `:/Users/utsav/db/t set ([] a:`abc`def`ghi; b:20 30 40)
 
     2. We can serialize the referencing foreign column table and the referenced keyed table and bring them back into memory.
-    q)kt:([sym:`GOOG`AMZN`FB]; px:20 30 40);
+    q)kt:([sym:`GOOG`AMZN`FB]; px:20 30 40); /- referenced keyed table
     q)`:/Users/utsav/db/kt set kt
-    q)t:([] sym:`kt$5?`GOOG`AMZN`FB; vol:5?10000)
+    q)t:([] sym:`kt$5?`GOOG`AMZN`FB; vol:5?10000) /- referencing foreign column table
     q)`:/Users/utsav/db/t set t
 
     3. We can operate on serialized table by loading them into memory using get or \l.

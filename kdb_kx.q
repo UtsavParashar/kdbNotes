@@ -61,3 +61,7 @@ q)select from tree where pid=0 / find children of root
 
 Serializing and Deserializing:set and get -- whole table is loaded in memory
 Storing and retrieving
+
+t:([] sym:`GOOG`AMZN`GOOG`FB; px:10 20 11 30)
+select from t where px=(max;px) fby sym
+select by sym from t where px=max select max px by sym from t

@@ -208,4 +208,3 @@ Coalesce is similar to vertical join with a
 
 
 
-
