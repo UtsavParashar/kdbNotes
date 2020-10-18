@@ -152,3 +152,121 @@ Close Handler -
     .z.ts:{5001; show "Attempting to reconnect"; h::hopen `:if[h>0; value "\\t 0"; show "Reconnected"]}
     on each call the client attempts to reconnect. If successful, the connection handle will be assigned a positive integer(int) value. Additionally, the "If statement" in .z.ts resets the timer to 0 (as in turns it off) if the reconnection attempt is successful.
 
+Attributes:
+===========
+Lists(and by extension, dictionaries and columns of tables) can have attributes applied to them. Attributes imply or enforce certain properties on the list which will aid searching in different situations.
+A list can only have one attribute set - the last attribute applied will be the one which remains. Some attributes will also be lost upon modification.
+
+Sorted - `s#
+`s# mean the list is sorted ascending. If the list is explicitly sorted by asc(or xasc) then the list will automatically have the sorted attribute set.
+a:asc 3 2 1 /- `s#1 2 3j
+A list which is known to be sorted can also have the attributes explicitly set. q will check if the list is sorted, if it is not then the s-fail error will be thrown.
+a: reverse b:3 2 1
+`s#a /- `s#1 2 3j
+`s#b /- 's-fail
+
+The sorted attribute will be lost on an unsorted append. Otherwise, it will be maintained.
+a:`s#1 2 3
+a,:3 4
+a /- `s#1 2 3 3 4j
+a,:2 2
+a /- 1 2 3 3 4 2 2j
+
+It will also be lost on most deletes.
+a:`s#1 2 3 4
+a _: 1
+a /- lost attribute - 1 3 4j
+
+Searching in q on binary list is done by binary search, which is much faster than the usual linear search. The increases the speed on in, within, find etc and also min, max and med(which simply becames first, last and middle index respectively).
+
+Parted - `p#
+`p# means the list is parted - identical items are sorted contiguously.
+The attribute can only be set by explicitly applying it. The will internally generate a dictionary mapping each element in the list to its first occurence. This will require some extra storage space, which will be worst case (all items unique) be n+ l*4 bytes, where n is the size of the list and l is the length. However, the worst case for storage overhead is when all items in the list are unique, and there will be no benifit to applying `p# to the list.
+Applying `p to a list which is not contiguous will invoke a u-fail error.
+
+a:1 4 4 2 2
+`p#a /- `p#1 4 4 2 2j
+b:1 4 4 2 2 1
+`p#b /- u-fail
+
+It will always be lost on modification, even if the modification preserves the parting.
+a:`p#a /- `p#1 4 4 2 2j
+a,2 /- 1 4 4 2 2 2j
+a:`p#a /- `p#1 4 4 2 2j
+a _: 1 /- 1 4 2 2j
+
+When a parted list is searched, starting index of the element(s)to be found is looked up in the internal mapping. All occurences of the elements can then be retrived by one contiguous read. In memory, this gives little or no improvement over the other attributes. However, when the data is stored on disk this gives a massive performace improvement as disk head skipping is minimised. In kdb+ splayed databases it is usually to apply the parted attribute to the column which is searched most frequently.
+
+Grouped: `g#
+Applying `g# attribute mean that the list is grouped. An internal dictionary is built and maintained which maps each unique item to each of its indices, requiring considerable storage space. For a list of length l containing u unique items of size s, this will be l*4 + u*s bytes.
+The attribute can be applied to any typed lists. It is maintained on appends, but lost on deletes.
+
+a:`g#1 2 5 6 5 2 1 /- `g#1 2 5 6 5 2 1j
+a,:5 /- `g#1 2 5 6 5 2 1 5j
+a _: 0
+a /- 2 5 6 5 2 1 5j
+
+When a grouped list is searched, the indices of the elements to be found are retrieved from the internal mappings. All occurences of the elements can be retrieved. This greatly decreases retrieval time when data is stored in-memory. For on disk data the improvement is hard to quantify as the disk head will still skip.
+
+Unique: `u#
+`u# can be applied to a list of unique elements. If the list in not unique, a u-fail error will occur.
+When a list is flagged as unique, an internal hashmap is created to each item in the list.
+`u# is preserved on concatenations which preserve the uniqueness. It is lost on deletions and non unique concatinations.
+a:`u#1 2 3 4
+a,:5 6 7 /- `u#1 2 3 4 5 6 7j
+a,:2 /- 1 2 3 4 5 6 7 2j
+a:`u#1 2 3 4
+a _: 0
+a /- 2 3 4
+Searches on `u# lists are done via a hash function, so become constant time.
+
+Removing attributes: Attributes can be removed on applying `#.
+
+Appropriate Use of Attributes:
+The following are intended as general guidelines only. Points 1-3 are intended for in-memory applications. Fox maximum benifits, apply attributes to list which requires frequent searching.
+1. If the elements of the list are unique, use `u#. This will produce fast, constant retrieval time. `u# should be applied to the key of a dictionary, or the key of a single key table which has length greater than 100. At approximately this point, has function becomes faster than searching a list of 100. Concatinations on dictionaries and single keyed tables will automatically preserve the uniqueness of the key.
+
+2. If there are multiple occurences of each element and ample memory is available, apply `g#. Retrieval time will then be more dependent on the number of unique elements and the number of instances of the elements being looked up rather than the length of the list itself. A good example of using `g# is on the sym column (generally the instrument/element name) of kdb+.
+
+3. If items are generally distinct and the data is static, the list could be sorted to have `s# applied. Also, if concatenations always preserve sort, `s# could be applied. Sorting will improve search time, although search time will still be dependent on the lenght of the list. This could be done in kdb+ tick to the time column provided the data received comes from one ticker plant only, and the ticker plant appends the time column to all sources of data.
+
+4. `p# is used for on-disk data. Data can then be retreived for a whole set of data using contiguous reads, minimising disk head skipping.
+
+Examples:
+Applying sort decreases search time.
+s: update `s#time from t:([] time:`#asc 09:00:00+1000000?(60*60*8))
+\t do[10000;select from t where time within 10:00 12:00]
+\t do[10000;select from s where time within 10:00 12:00]
+\t do[100000; select from t where time=11:00:00]
+\t do[100000; select from s where time=11:00:00]
+
+Grouping decreases search time
+g:update `g#sym from t:([] sym:1000000?100?`4)
+\t:1000 select from t where sym=`icmf /- 1229j
+\t:1000 select from g where sym=`icmf /- 2j
+Retreival time with grouping in dependent on number of items returned rather than size of the table.
+g:update `g#sym from ([]sym:1000000?100?`4),([] sym:2#`testsym)
+\t:1000 select from g where sym=`testsym /- 1j
+/- 100 times bigger table
+g1:update `g#sym from ([]sym:10000000?100?`4),([] sym:2#`testsym)
+\t:1000 select from g1 where sym=`testsym /- 1j
+/- Same size as g1 but 200000 elements to retrieve
+g2:update `g#sym from ([] sym:800000?100?`4),([]sym:2000000#`testsym)
+\t:1000 select from g1 where sym=`testsym /- 1j
+
+Constant time lookups with unique flag
+n:1000000
+d:((neg n)?`6)!n?1000
+du:(`u#key d)!value d
+(key d)[0 50000 99999] /- `bhkmib`chnaeh`cljfdj
+/- in d, lookup time depends on location of element.
+\t:10000 d`bhkmib /- 7
+\t:10000 d`chnaeh /- 263j
+\t:10000 d`cljfdj /- 514j
+/- with unique flag, lookups are faster and constant time
+\t:10000 du`bhkmib /- 8j
+\t:10000 du`chnaeh /- 6j
+\t:10000 du`cljfdj /- 9j
+
+
+
