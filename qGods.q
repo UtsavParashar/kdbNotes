@@ -268,5 +268,24 @@ du:(`u#key d)!value d
 \t:10000 du`chnaeh /- 6j
 \t:10000 du`cljfdj /- 9j
 
+Importing Data:
+Microsoft access files:
+On windows it is possible to import from Microsoft Access(.mdb) file directly into a kdb+ session.
+First two helper files are needed and both of them are available from www.kx.com. DOwnload www.kx.com/q/w32/odbc.dll and http://kx.com/q/c/odbc.k to you local q directory. Put the "odbc.dll" file into your q\w32 directory.
+\l odbc.k
+To load all tables from a single file, test.mdb:
+.odbc.load `test.mdb
+All the tables in the file will now be present in the top-level namespace of the q session. You can also open a handle to the file in-place.
+db:.odbc.open `test.mdb
+To get a list of avaiable tables
+.odbc.tables db
+To execute a sql statement against the file:
+.odbc.eval[db; "Select * from table_name"]
+And then, finally close the handle
+.odbc.close db
+
+Character-delimited text files:
+
+
 
 
