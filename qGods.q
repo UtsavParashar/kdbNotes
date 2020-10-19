@@ -285,6 +285,32 @@ And then, finally close the handle
 .odbc.close db
 
 Character-delimited text files:
+Text files with field delimited by a particular character(for example - .csv file) can be imported using 0: function. This function takes two parameters - the file to be imported, and a description of how to read the fields within.
+For example - a given file trade.csv with the following headers
+Date, Time, sym, ex, price, size
+
+Where the fields are separated by commas, the file can be imported with:
+("DTSSFI";enlist ",")0:`:trade.csv
+
+The first argument is a format desription, consisting of a list with 2 items - the first describes the number and type of fields to be read from the file. The capital letter type representation is used to specify the type of each field to be read from the file, and in this example is from left to right date, time, symbol, symbol, float, integer. A blank space in this list indicates a column should be skipped and not read, while an astrisk will read the literal characters as a string.
+The second argument specifies the character that separtes fields in the file. In this example, we are reading from a comma delimited file, so we use "," as the delimiter. We have also used an enlist function to convert "," into a list. This specifies that the first line of the file contains the name of the columns, rather than actual date fields. These will be used as column names in the q table this function returns after reading the file. If we don't use enlist, every line on the file will be read as data.
+
+Nested Lists from Test Files:
+Text files containing nested lists can also be read using funtion 0:  Suppose we have a comma separated file with data such as:
+    sym,time,depth
+    IBM,10:10:21,23.2 23.1 22.1
+    GOOG,11:10:21,123.2 123.1 122.1
+    AMZN,09:10:21,223.2 223.1 222.1
+The third column in this file should be read as a list of floats. Start by reading these fields as literal characters by using an asterisk as the format specifier.
+Data: ("ST*";enlist",")0:file.csv
+This will load the first two columns correctly, but the depth column is just a list of strings, rather than actual float values. We can extract the values with:
+    Data[`depth]:"F"$vs[" "] each Data[`depth]
+First we use the vs (vector from scalar) function on each item on the depth column of the data table to split the string of spaces, leaving us with an individual string for each float value.
+The $ function is then called with the "F" parameter, which extracts float values from string arguments. This results in the correct list of lists of floats, which is then assigned back to the depth column of the Data table.
+
+Fixed witdh Text Files:
+The 0: function can also be used to read the file that use constant-width values to delimit fields instead of specific characters. The general format of the function is similar e.g ("ISF"4 10 4)0:`:file.txt
+Again the first argument specifies the data format, and the second is a file handle.
 
 
 
