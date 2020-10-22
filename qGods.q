@@ -311,6 +311,58 @@ The $ function is then called with the "F" parameter, which extracts float value
 Fixed witdh Text Files:
 The 0: function can also be used to read the file that use constant-width values to delimit fields instead of specific characters. The general format of the function is similar e.g ("ISF"4 10 4)0:`:file.txt
 Again the first argument specifies the data format, and the second is a file handle.
+The first half of the format argument is identical to the character-delimited usage seen above, giving a list of the types of each field in sequence. The second part gives the length in bytes of each of those fields in their respective orders.
+The above example would mean to read a 4byte integer, a 10 byte symbol and a 4 byte float from the file.
+It is also possible to read only a section of a file, The second argument to 0: can be extended from just the file handle to the list, giving the file handle plus offset and range parameters.
+("ISF"4 10 4)0:(`:file.txt;19;72)
+This will begin reading at byte 19 and continue to read 72 more bytes.
+The read must start and end on a record boundary - here the offset of 19 indicates that we will skip a single 18 byte record(the 4byte integer, a 10 byte symbol and a 4 byte float identified in the first argument as comprising a single record adds up to 18bytes), and we will read 72 more bytes, or 4 whole records.
+
+Binary Files:
+The 1: function is used to read from binary files. Its usage is similar to fixed width of 0:
+("ich";4 1 2)1:0x0041200FF00
+will read the data on the right a 4-byte integer, a 1-byte character and a 2 byte short.
+
+Very Large Files:
+Sometimes you may need to read from a file that cannot fit in available memory. The .Q.fs will fetch chunks of a text file and apply a function you specify to them.
+For example, to read in a very large csv file, and write the contents directly to a splayed table on a disk without ever holdind the entire file in memory:
+.Q.fs[{`:data/t/ set .Q.en[`:data]("ISF";enlist",")0:x}]`:file.csv
+Here the function
+{`:data/t/ set .Q.en[`:data]("ISF";enlist",")0:x}
+is applied to file.csv in sections, reading from each and saving them to disk.
+
+Advanced Web Interface:
+It is possible to customize your web interface for use with kdb+ sessions. Custom Java script can be stored and loaded to create bespoke functionality and look and feel to webserver displays.
+Before coming to examples it is imp to mention that every http request which comes into a kdb+ session is handled by a function .z.ph from the .z namespace(c.f. IPC section). This function essentially allows a kdb+ process to be accessed over the web.
+
+.z.ph: Also known as http get, this function handles synchronous http requests. There is no async version. The function takes(or is passed) two parameters:
+    1. The request text eg. "select from trade where sym=`GOOG"
+    2. Information on the web interface.
+        For eg: the select in the browser will look like
+        http://localhost:7001/?select%20from%20trade%20where%20sym=`GOOG
+    This will be passed to .z.ph with the default settings
+    x 0
+    "?select%20from%20trade%20where%20sym=`GOOG"
+    x 1
+    `Host`Connection`Cache-Control`Upgrade-Insecure-Requests`User-Agent`Accept`Sec-Fetch-Site`Sec-Fetch-Mode`Sec-Fetch-User`Sec-Fetch-Dest`Accept-Encoding`Accept-Language`Cookie!("localhost:7001";"keep-alive";"max-age=0";,"1";"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36";"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";"none";"navigate";"?1";"document";"gzip, deflate, br";"en-GB,en-US;q=0.9,en;q=0.8";"_xsrf=2|292cf471|878a9a0caafcb9b5dfca54ec218a7a80|1602139570; username-localhost-8888=\"2|1:0|10:1603292930|23:username-localhost-8888|44:NjFmMWE3ZmQ5ODI4NDI4ZTkwZjIwMzBiNWExMWM4MTI=|e0f840fc7ef23b09adbc294dd7a8a606e0e9d272453f0c4fa5d92850de49ce28\"")
+    "favicon.ico"
+    `Host`Connection`User-Agent`Accept`Sec-Fetch-Site`Sec-Fetch-Mode`Sec-Fetch-Dest`Referer`Accept-Encoding`Accept-Language`Cookie!("localhost:7001";"keep-alive";"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.80 Safari/537.36";"image/avif,image/webp,image/apng,image/*,*/*;q=0.8";"same-origin";"no-cors";"image";"http://localhost:7001/?select%20from%20trade%20where%20sym=`GOOG";"gzip, deflate, br";"en-GB,en-US;q=0.9,en;q=0.8";"_xsrf=2|292cf471|878a9a0caafcb9b5dfca54ec218a7a80|1602139570; username-localhost-8888=\"2|1:0|10:1603292930|23:username-localhost-8888|44:NjFmMWE3ZmQ5ODI4NDI4ZTkwZjIwMzBiNWExMWM4MTI=|e0f840fc7ef23b09adbc294dd7a8a606e0e9d272453f0c4fa5d92850de49ce28\"")
+
+The user can then use a combination of javascript and CSS to modify the display.
+To use these files put them into a directory called html in the QHOME directory.
+Besides modifying display custom user authentication can be written into the .z.ph logic thus creating secure web service applications.
+Eg:
+.z.ph:{.admin.check[`h;.z.u;.z.a;.h.uh x];.h.ph x}
+Where .h.ph defines provides entry info to the style files
+
+.q.k/.q.q:
+==========
+The .q.k file which comes with the kdb+ installation package. It contains the definitions for the keywords and functions which make up the q language, written in the bootstraped language k. There are a few exceptions to this - some functions like 'select', 'update' etc are natively implemented in C for speed.
+As well as q keywords, .q.k contains some functions in the .Q namespace which are useful for q developers. Many of these are covered in the appropriate sections (see tables on disk for .Q.en, .Q.dpft, .Q.chk and the section on importing text for .Q.fs) some other miscellaneous functions are described below:
+
+.Q.fu:
+This function is used when we have an expensive monadic function, which we have to operate on a vector with repeating values. .Q.fu will perform the function on each unique, then recreate the result. Often the time saving can be significant
+
 
 
 
