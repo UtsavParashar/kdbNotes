@@ -361,7 +361,82 @@ The .q.k file which comes with the kdb+ installation package. It contains the de
 As well as q keywords, .q.k contains some functions in the .Q namespace which are useful for q developers. Many of these are covered in the appropriate sections (see tables on disk for .Q.en, .Q.dpft, .Q.chk and the section on importing text for .Q.fs) some other miscellaneous functions are described below:
 
 .Q.fu:
-This function is used when we have an expensive monadic function, which we have to operate on a vector with repeating values. .Q.fu will perform the function on each unique, then recreate the result. Often the time saving can be significant
+This function is used when we have an expensive monadic function, which we have to operate on a vector with repeating values. .Q.fu will perform the function on each unique, then recreate the result. Often the time saving can be significant:
+s:10000000?`IBM.N`MSFT.O`AMZN.A
+getex:{last ` vs x}
+\t getex each s
+\t .Q.fu[getex each]s
+
+.Q.x12/.Q.j12
+These functions can be used to encode and decode 10 character strings to long integers. Allowable characters are restricted to uppercase chars and numbers. Usage is as follows:
+.Q.j12 "ABCDEFG123XYZ" /- -6463345209036409669j
+.Q.x12 6463345209036409669 /- "ABCDEFG123XYZ"
+
+.Q.x10/.Q.j10
+These functions are similar to the x12 and j12 equivalent, but operate on 10 char lists. Because they hold fewer characters in the string, the availble universe of chars is larger - they can hold lower case characters.
+.Q.j10 .Q.a /- -7301545714234745677j
+.Q.x10 7301545714234745677j
+
+q.q
+The q language allows the user to customise it's behaviour by looking for a script for 'q.q' in the user $QHOME folder. Customization of .q.k is discouraged as it makes upgrading q version difficult. Instead, the users own functions and changes to existing q functions can be placed in q.q, which is loaded from .q.k after all the other q functions have been defined. Any function defined in the .q namespace are availble for use with infix notation. For eg. if q.q looked like:
+    \c 20 150  /increase screen buffer
+    .q.prepend:{y,x}
+    Then from q console, the following would work
+    2 3 4 prepend 1 /- 1 2 3 4j
+
+    .q.ramesh:{y,x}
+    10 11 12 ramesh 9
+
+ Example of using .q.q to modify the web interface
+ This example make use of .q.q to change the default layout of the standard kdb+ web browser session.
+ Download the file dotk.k and the folder html from the following URL:
+ https://code.kx.com/trac/browser/contrib/simon/doth
+ Download doth.k to QHOME
+ Add the following 2 lines to q.q
+ \l doth.k
+ .h.HOME "c:\\html"
+ Note: Replace "c:\\html" with the path where you downloaded the html folder.
+ Now all new q sessions when viewed through the web browser will make use of doth.k and html folder and will look different to the standard kdb+ web session.
+
+q shortcuts (x!):
+----------------
+A number of shortcuts and functions exists in q to avoid repetition of common data manipulation. These shortcuts range from applying a quick key to a table (1!) without needing knowledge of column names, to helping produce informative log info(-3). For many, there is an equivalent function name that can be called to achieve the same end result. These shortcuts are provided to keep code as concise and efficient as possible, and are helpful for adhoc data manipulation and verification, when debugging a system.
+
+The full list of shortcuts are detailed below:
+
+0N! The standard output function can be used at any point in a function to print out a variable on the screen. After applying 0N! it returns the item being outputted, so you can continue to apply other functions to this item, unlike using show(see eg for clarification) which will always return null and so can no longer be used in the line of code eg:
+    {0N!x+0N!y}[3;5]
+ These are merely msgs to the screen. The result of the above function is still just 8, NOT a list 5 8 8.
+ Using show within the line fails:
+    {0N!x+show y}[3;5] /- 'type
+ 0N! is very useful when trying to debug code.
+
+n! If n is a positive integer, applying n! to any unkeyed table will key the table with first n columns. Similarly 0! will make any table unkeyed. Note: Applying n! to a table does not enforce or check the key for uniqueness. Eg:
+If applying n! to n columned table will throw 'length.
+
+-1! Prepends a colon to the start of a symbol if it is not there already. This resulting symbol can be used to create a file handle eg
+a:`$"/apps/kdb"
+-1!a
+-1!`:/apps/kdb
+This is the same as the function hsym or {$[":"=first string x;x;`$":",string x]}
+
+-2! Will return any attribute associated to the argument. Consider the example below:
+list1 has no attribute
+list1:1 2 3
+-2!list1 /- `
+list2 has unique attribute applied
+list2:`u#1 2 3
+-2!list2 /- `u
+attr list2 /- `u
+list3 has been sorted
+list3:asc list1
+-2!list3 /- `s
+NB(Not bad) Only one attribute can be assigned to a variable
+list4: asc `u#list1
+-2!list4 /- `s
+This is same as function attr(attr internally used 2! - attr~ ![-2j])
+
+
 
 
 
