@@ -436,6 +436,95 @@ list4: asc `u#list1
 -2!list4 /- `s
 This is same as function attr(attr internally used 2! - attr~ ![-2j])
 
+-3! This will return a string representation of the argument.
+This function is very useful if you want to write data to a file, such as a log report eg
+a:(1;2;`f;3e)
+-3!a /- "(1;2;`f;3e)"
+A working example:
+Create a simple function to sum a list, and return an error string if it fails.
+try_2_sum:{[a] @[sum;a;"The function sum has failed to run at ", (string .z.Z),". The input list was ",-3!a]}
+a:(1;2;`f;3e)
+try_2_sum[a]
+a:1 2 3
+try_2_sum[a] /- 6j
+An error like this can be captured and subsequently written to a log file.
+
+-5! will represent the functional representation of arguments
+-5!"select last time, min qty by sym from trade where time>13:00:00.000" /- (?;`trade;enlist enlist (>;`time;13:00:00.000);enlist `sym!enlist `sym;`time`qty!((last;`time);(min;`qty)))
+parse "select last time, min qty by sym from trade where time>13:00:00.000"
+This is very useful when trying to build a dynamic query in functional form since it gives you a template to work from.
+-5! is similar to function parse with a difference which can be seen in parse function definition
+parse /- k){$["\\"=*x;(system;1_x);-5!x]}
+parse "\\select last time, min qty by sym from trade where time>13:00:00.000"
+-5!"\\select last time, min qty by sym from trade where time>13:00:00.000"
+
+-6! Evaluate the functional form of query. This is same as eval function.
+a:([] c1:1 2 3; c2:2 3 1; c3:3 2 3)
+b:-5!"select from a where c1=c3"
+-6!b
+
+-7! Argument is a file location. This function will return the size of the file in bytes.
+-7!`$":abc.q"
+-7!-1!`$"abc.q"
+
+-8! Returns the byte representation of a string.
+-8!"select from trade" /- 0x010000001f0000000a001100000073656c6563742066726f6d207472616465
+
+-9! Return the string representation from a byte sequence.
+-9!0x010000001f0000000a001100000073656c6563742066726f6d207472616465 /- "select from trade"
+
+-11! Used for streaming execution of a file. This function can be used in three ways:
+-11!`:logfile /- will replay the entire file ~ equivalent to -11!(-1;`:logfile)
+-11!(-2;`:logfile) /- will not replay the logfile, but rather return the number of valid lines in logfile.
+-11!(n;`:logfile) /- will replay n line from a log file.
+
+-12! Returns the hostname for a given ipaddress in integer format.
+-12!-13!.z.h
+
+-13! Returns ip address for a given hostname symbol
+-13!.z.h
+
+-15! Runs md5 encryption on a string
+-15!"password123" /- 0x482c811da5d5b4bc6d497ffa98491e38
+
+-16! Provides the reference count on that object
+-16!0 /- 1i
+-16!(),() /- 58i
+
+Replaced:
+-1! hsym
+-2! attr
+-3! .Q.s1
+-5! parse
+-6! eval
+-7! hcount
+-12! .Q.host
+-13! .Q.addr
+-15! md5
+-20! .Q.gc
+-24! reval
+-29! .j.k
+-31! .j.jd
+-32! .Q.btoa
+-34! .Q.ts
+-35! .Q.gz
+-37! .Q.prf0
+
+Iterators:
+Each Prior Scan Over
+Each Prior "':" modifies a dyadic function but it created a monadic function. This new function applies the underlying function to each adjacent pair of items in a list. The function is uniform on its argument by pre-pending the first element of the input to the output.
++':[1 2 3] /- 1 3 5j
+-':[1 2 3] /- 1 1 1j
+prior [+;1 2 3] /- 1 3 5j
+This is the result of 1(the first element joined with (1+2) and (2+3))
+A more common usage is deltas which is defined as "-':"
+deltas 100 200 300 500 1000 700 /-100 100 100 200 500 -300j
+-':[100 200 300 500 1000 700] /- 100 100 100 200 500 -300j
+
+Scan
+
+
+
 
 
 
