@@ -521,9 +521,99 @@ A more common usage is deltas which is defined as "-':"
 deltas 100 200 300 500 1000 700 /-100 100 100 200 500 -300j
 -':[100 200 300 500 1000 700] /- 100 100 100 200 500 -300j
 
-Scan
+Scan:
+Modifying a Dyadic Function:
+As an example take "*"(astrisk - multiplication Operator)
+*\[1+til 5]
 
+Modifying a Monadic function:
+This produces a list of successive application of "f" to the initial value until it encounters 2 consecutive values the same.
+A couple of simple examples
+(neg\)1
+(rotate[1]\)"abcd"
+A more complex example is the Newton Raphson approximation of the square root of a number (obviously use the built in "sqrt" function but this serves as a good example)
+/- This will the underlying function
+foo:{[C;xn]xn-(1%2*xn)*(xn*xn)-C}
+/- This will be the function we call
+SQRT: {foo[x]\[x]}
+In SQRT we create a PROJECTION foo[x] which creates a monadic function we can use for the scan. Let's look at a specific example with x=5
+SQRT 5
 
+You can see it gives us the successive approximations starting with a seed value of 5. The scan terminates here because we hit the limit of precision of floating point number.
+We can also call f\ with 2 arguments. In this case the first x argument can be either integer number of iterations or a while condition applied to the result of f.
+f: xexp[;2]
+(f\)[5;2]
+(f\)[1000>;2]
+// Note in this case the result 256f still passes the while condition and so 65536f is also returned.
+
+You can also use the q keyword scan.
+(+)scan 1 2 3 4 5
+scan[+;1+til 5]
+
+Over:
+Over(/) and Scan(\) are very closely related. Suppose we have a function f and an argument x then in general:
+f/[x] = last f\[x]
+(*/[1+til 5]) = last (*\)1+til 5
+Or redefining  our SQRT function from above:
+SQRT:{foo[x]/[x]}
+SQRT 5
+
+When over(/) is following a multivalent function then:
+{x-y+z}/[35 40 45; 7 8; 9 11] /- 0 5 10j
+Which is just:
+({x-y+z}[{x-y+z}[35;7;9];8;11];
+{x-y+z}[{x-y+z}[40;7;9];8;11];
+{x-y+z}[{x-y+z}[45;7;9];8;11])
+
+You can also use the q keyword "over"
+(*) over 1+til 5
+over[*;1+til 5]
+
+Joins:
+------
+In a conventional db joins are primarily associated with tables, in which a join is used to extract data from lookup table based on a common column or key. In kdb+ the join operator can also be used with atoms/lists and dictionaries.
+Atoms/Lists
+The simplest join that can be considered uses the ',' primitive operator. It can be used to join (concatenate) atoms to create lists.
+`a,1
+"Hello ","World"
+Lists to create generic lists,
+`a`b`c,`d`e
+(1;2 3;3),`q`w
+The join results in a generic list unless all elements are of the same type.
+type `a`b`c,1 2 3
+type `a`b`c,`d`e
+Each both - When combined with the `(each) the lists are joined sideways. In this case the list must have the same number of elements.
+`a`b`c,'`d`e`f
+`a`b`c,'1 2 /- 'length
+
+Dictionaries:
+The usefulness of the join operator on dictionaries is limited and behaves in the same way as an upsert into a keyed table.
+The result of join on two dictionaries with unique keys is a simple merge.
+(`a`b`c!1 2 3),`d`e!1 2
+When the key is common to both dictionaries, the value of the key in right operand prevails.
+(`a`b`c!1 2 3),`a`d!4 5 /- `a`b`c`d!4 2 3 5j
+The behavior is similar when used with unkeyed and keyed tables.
+
+Tables:
+Using , with two unkeyed tables appends/inserts the data into the first table, and can be thought of as a vertical join of columns rather than the traditional lateral join of rows.
+([] a:1+til 10; b:10?`GOOG`AMZN),([] a:11+til 10; b:10?`IBM`AMZN)
+The column names must match for the join to work.
+([] a:1+til 10; b:10?`GOOG`AMZN),([] a:11+til 10; c:10?`IBM`AMZN) /- The server sent the response: mismatch
+But the column types do not. Should the types of the individual tables differ the resulting column type will be generic.
+meta ([] a:1+til 10; b:10?`GOOG`AMZN),([] a:11+til 10; b:10?1+til 10)
+
+When the tables are keyed the result is an upsert.
+t1:([c1:1 2 3]c2:`a`b`c)
+t2:([c1:1 4 5]c2:`d`e`f)
+t1,t2
+
+In summary, using , with unkeyed tables is the same is similar to an insert, but synonymous with an upsert when the tables are keyed.
+Tables can be sideways joined as demonstrated with lists above:
+t1:([] c1:1 2 3; c2:`a`b`c)
+t2:([] c3:3 5 6; c4:`a`e`f)
+t1,'t2
+
+Inner Join(ij)
 
 
 
