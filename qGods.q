@@ -613,10 +613,46 @@ t1:([] c1:1 2 3; c2:`a`b`c)
 t2:([] c3:3 5 6; c4:`a`e`f)
 t1,'t2
 
-Inner Join(ij)
+Inner Join(ij):
+The simplest type of join which returns all rows in the source table which have an entry in the lookup table i.e the columns which are common in both tables.
+Use - ij[unkeyed; keyed]
+unkeyed ij keyed
+([] a:10 20 30; sym:`GOOG`AMZN`GOOG) ij ([sym:`AMZN`FB] px:100 200)
+This type of join is equivalent to a right outer join in standard sql.
 
+Left Join(lj):
+The left join is used to perform lookups on a keyed table. The joined columns do not have to have an entry in the lookup table.
+Use - lj[unkeyed; keyed]
+unkeyed lj keyed
+([] a:10 20 30; sym:`GOOG`AMZN`GOOG) lj ([sym:`AMZN`FB] px:100 200)
+The lj will return same number of rows as the source table.
+In contrast to ij each row from source table in returned even if it does not have keyed entry in lookup table.
 
+The primary key column of kt must be present in t if not a foreign key.
+t:([]c2:`b`c`d; c3:`def`ghi`jkl)
+kt:([c1:`a`b`c]c2:1 2 3)
+t lj kt /- error since c1 is not present in t
+This type of join is equivalent to left outer join in standard sql.
 
+Union Join: uj
+The union join is a vertical join of columns in contrast to the ij and lj previously mentioned.
+Use: - uj[unkeyed; unkeyed]
+     unkeyed uj unkeyed
+
+([] s:4?`GOOG`AMZN; px:4?100) uj ([] s:4?`GOOG`AMZN; px:4?1000.; vol:4?10000)
+
+If tables are keyed then uj behaves as upsert.
+Use: - uj[keyed; keyed]
+     keyed uj keyed
+([s:4?`GOOG`AMZN]; px:4?100) uj ([s:4?`GOOG`AMZN`FB]; px:4?1000.; vol:4?10000)
+
+If one of the table is keyed and another one unkeyed then it will throw type error.
+([s:4?`GOOG`AMZN]; px:4?100) uj ([]s:4?`GOOG`AMZN; px:4?1000.; vol:4?10000)
+
+Neither of the tables need to be keyed and columns with the same name need not have the same type.
+kt:([] c1:`a`b`c; c2:1 2 3)
+t:([] c2:`b`c`d; c3:`def`ghi`jkl)
+t uj kt
 
 
 
