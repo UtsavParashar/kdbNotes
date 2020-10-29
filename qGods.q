@@ -654,6 +654,37 @@ kt:([] c1:`a`b`c; c2:1 2 3)
 t:([] c2:`b`c`d; c3:`def`ghi`jkl)
 t uj kt
 
+Common cols are joined and values for any missing cols is filled with nulls.
+
+One use of this could be timeorder data from two different tables in order to ascertain the sequence of updates across multiple tables. For example trade and quote tables could be joined as below:
+show quote:([] time:09:29 09:29 09:32 09:33; sym:`FD`KX`FD`KX; ask:30.23 40.2 30.35 40.35; bid:30.2 40.19 30.33 40.32)
+show trade:([] time:09:30 + til 6; sym:`FD`FD`KX`FD`KX`FD; price:30.43 30.45 40.45 30.55 41.0 31.; size:100 200 200 300 300 600)
+It is not easy to see the sequence in which trades and quotes happened.
+`time xasc uj[trade; quote]
+This type of join does not have an equivalent in standard sql.
+As-of join is also very powerful join to match trade and quotes data.
+aj[`sym`time;trade;quote]
+
+Asof Join(aj):
+As the name may suggest it is mainly used to join columns with reference to time. It will return each row of the source table and any rows in the second table which have an entry before or at the same time based on the "key columns".
+Use: aj[<col1..coln>;tab1;tab2]
+It is primarily used to find the prevaling quotes at the time of a trade, or it will return each trade along with the quote 'as of' the trade time by symbol.
+aj[`sym`time;trade;quote]
+This type of join is again peculiar to kdb+.
+
+Plus Join:(pj)
+Again an example of a left outer join which will return all rows from the source table, looking up any common columns and summing their values. If the lookup column does not exist in the table for a particular to then the values are zero filled.
+([] sym:`GOOG`AMZN`GOOG;a:10 20 30) pj ([sym:`AMZN`FB] a:100 200)
+
+As the name may suggest, the column types in the lookup table must be ints, floats.
+t:([] c1:`a`b`c`a`d`c; c2:100 200 10 20 30 600)
+kt:([c1:`a`b`c] c2:1 2 3; c3:`alpha`beta`charlie)
+t pj kt /- 'type
+kt:([c1:`a`b`c] c2:1 2 3)
+t pj kt
+t:([] c1:`a`b`c`a`d`c; c2:100 200 10 20 30 600;c3:`alpha`beta`charlie`a`b`c)
+t pj kt
+Again cannot find an equivalent in sql. It can be thought of as an extension of the left outer join.
 
 
 
