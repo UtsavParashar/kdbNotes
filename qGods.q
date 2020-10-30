@@ -686,5 +686,50 @@ t:([] c1:`a`b`c`a`d`c; c2:100 200 10 20 30 600;c3:`alpha`beta`charlie`a`b`c)
 t pj kt
 Again cannot find an equivalent in sql. It can be thought of as an extension of the left outer join.
 
+Foreign Key:
+Performance wise the best way to create a join is using foreign key. First a lookup table is created called kt.
+show kt:([c1:1 2 3]c3:`alpha`beta`charlie)
+A foreign key can then be created by including the referencing the lookup table name in the creation on unkeyed table. A foreign key can be created between common columns c1 in t and kt as below:
+t:([] c1:`kt$1 2 3; c2:`a`b`c)
+meta t
+The foreign key works as an enumeration and means that any value in t.c1 must be contained in the key of kt. An attempt to insert a non-enumerated value will result in cast error.
+`t insert (4;`d) /- 'cast error
+The columns for the lookup table can be accessed using the dot notation as below:
+select c1, c2, c1.c3 from t
+The foreign key is an example of an inner join since all values in t must have a lookup row in kt.
+Care must be taken when using foreign keys, since a deletion from kt will upset the enumeration and may give unexpected results.
+delete from `kt where c1=2
+t
+select  c1,c2,c1.c3 from t
+
+Table Arithmetic:
+A good place to start this section is with dictionaries and we can see how this can be applied to tables.
+First of all we have our dictionary defined.
+d:`a`b`c`d!10 20 30 40
+The key of this dictionary is given by
+key d
+And the value
+value d
+A particular value in our dictionary is referred to by using the corresponding key to isolate it.
+d`b or d[`b]/- 20
+The values can be manipulated by using the arithmetic operator +-*%
+d[`c]*2
+2+d`b
+The above simple manipulations are simply about extracting information from a dictionary. If one needs to amend the dictionary values then the amend formulation can be used:
+d`c /- 30
+@[`d;`c;-;2]
+We get dict returned which indicates that the dictionary has been amended.
+d`c /- 28
+when experimenting with this type of operation it useful to know that you can omit the ` before the name of the dictionary and it isn't amended, but will display the potential new value
+@[d;`c;+;2] /- `a`b`c`d!10 20 32 40j
+d`c /- 30
+This method can also be used to add items to a dictionary
+@[d;`e;:;10] /- `a`b`c`d`e!10 20 30 40 10j
+
+When dealing with tables we can first define our example tables
+trade:([] time:0#0nt; sym:`;price:0n; size:0N)
+and populate it
+n:10
+sym:`GOOG`FB`AMZN`MS
 
 
