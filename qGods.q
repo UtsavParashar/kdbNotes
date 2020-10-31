@@ -731,5 +731,40 @@ trade:([] time:0#0nt; sym:`;price:0n; size:0N)
 and populate it
 n:10
 sym:`GOOG`FB`AMZN`MS
+insert[`trade;(("t"$.z.Z)+n?1000000;n?sym;n?100.;n?100)]
+`time xasc `trade
+To get a particular columns from this table it is worth remembering than an unkeyed table is a dictionary of lists.
+trade`size /- gets us the size column from the table.
 
+This property makes it very easy for us to perform table arithmetic as we can use the same techniques as we use on dictionaries.
+20*trade`size
+changing the values of size col in trade table
+trade[`size]*:20
+trade
+
+We can also use the @(amend) as before
+@[trade;`price;-;2]
+
+P.S trade changes will only be persisted using `trade
+
+If the table is keyed
+trade2: `sym xkey trade[0 1 2 4]
+(getting relevant rows(unique sym) from our example table)
+
+To isolate the relevant columns one can use one of the below techniques(whichever is more appropriate to the situation)
+`GOOG`FB`AMZN`MS0
+{trade2[x]`size}each sym
+(0!trade2)`size
+and manipulate the data as for unkeyed tables
+20*(0!trade2)`size
+
+Using combination of the above techniques a lot of table manipulation can be achieved.
+Eg.: Dictionary Addition
+(`a`b`c`d!10 20 30 40)+`a`b`d!10 20 30
+similarly table addition
+([x:`a`b`c] y:10 20 30)+([x:`a`b`d]y:10 20 30)
+
+Tables must be keyed - and can compare with result of pj.
+
+Slave and Slave Processes:
 
