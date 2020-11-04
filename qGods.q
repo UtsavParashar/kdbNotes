@@ -767,4 +767,50 @@ similarly table addition
 Tables must be keyed - and can compare with result of pj.
 
 Slave and Slave Processes:
+The kdb+ slave option is of most use when dealing with databases paritioned over multiple drives. (It may also be used to process farm CPU bound operations) Essentially a facility is prvided whereby a slave process may be assigned to a disk controller or suitable device or processing on incoming data can be performed on incoming data streams in tandem. This functionaly requires the setup of an appropriate database and the extra functinality provided by the s option is dependant on the hardware used in the current setup.
+The most common use is in large TAQ database where partitions are spread across multiple drives and each drive is assigned a worker slave. Usually linear performance increases can be achieved with this methodology.
+
+Functional/Dynamic Queries:
+When q is asked to perform any query which it obtains in string form it first changes the input into its functional form and then executes it. Therefore despite the fact that there isn't any performance gain from using functional queries there are some situations where they are very useful( for example when column names are dynamically produced).
+The functional form are:
+?[t;c;b;a] /- for select
+![t;c;b;a] /- for update
+where:
+    t is a table
+    a is a dictionary of aggregates
+    b is a dictionary of group bys
+    c is a list of constraints
+
+In all examples below we will use table t defined as below:
+t:([] a:1 2 2 3 1; b:`e`f`g`h`i; c:10 20 25 30 15)
+
+Functional Select:
+So staring from the easiest case, functional version of "select from t" will look like:
+?[t;c;b;a]
+where
+    c:() /- no constraints
+    b:0b /- no group bys
+    a:() /- to return all columns of t
+or writing it as one expression:
+?[t;();0b;()]
+
+A very useful tool in writing more complicated functional queries is a parse function or its equivalent (-5!) which changes the string form of a query into function form.
+When parse or (-5!) are executed they return the parse tree in k. The "," symbol is equivalent to enlist in q but is not recognised in q so it has to be converted to q using "enlist" where needed.
+parse"select from t where a=2"
+?[`t;enlist (=;`a;2j);0b;()]
+
+The return of the parse function is returned as an enlisted list of functions (one element list, where the one element is a list of functions). The two commas in the one where clause case display the double enlisting:
+parse"select last b by a from t where c<25"
+?[`t; enlist (<;`c;25j);(enlist `a)!enlist `a;(enlist `b)!enlist (last;`b)]
+
+In the multiple where clause case, only one (comma) is displayed as the one element can already be seen to be a list:
+parse"select last b by a from t where c<25,c>10"
+?[`t;enlist ((<;`c;25j);(>;`c;10j));(enlist `a)!enlist `a;(enlist `b)!enlist (last;`b)]
+
+Functional Exec:
+A simplified version of functinal select is functional exec. An example of the easiest case(returning values of one of the columns )is:
+parse"exec b from t"
+?[`t;();();enlist`b]
+
+
 
