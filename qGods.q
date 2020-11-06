@@ -882,5 +882,35 @@ rsave `:path/tablename
 rload `:path/tablename
 NOTE: For a table to be saved as splayed, it should be unkeyed and enumerated.
 
+Partitioned Tables:
+Partitioned tables are splayed tables spread across more partitions(directories). Inside each partition a table will have its own directory, with the structure of a splayed table.
+The tables could be split on a day/month/year or int basis due to large size and to get an optimized access at its content.
+In the following dir listing we can see a database with two partitions (of type date) and one partitioned table(bbb)
+In a q process that loads the respective directory we can see the virtual column date, even though there is no date column saved in any partition
+q db
+
+The partitioned mode is suitable for millions of records per day/month(eg time series data) and queries usually are executed against a limited set of partitions, so that only those partitions are accessed/queried.
+
+sym file:
+The sym file is a kdb+ binary file containing the list of symbols from all splayed and partitioned tables. During the enumeration process, all columns of symbol type are converted to enumerations against the sym file, after new symbols are added to the sym file. Therefore the sym file contains a list of unique values. Being a kdb+ binary file, it can be read with get.
+get `:sym
+
+q scripts:
+These are loaded at startup and can contain code to be executed or functions definitions.
+
+html files:
+They may be used by the built-in web server.
+
+par.txt file:
+This is a configuration file, used when partitions are spread against more directories/disk drives, and contains the path to the disk partitions. This should be used in a system that has more disk controllers accessing a disk array to make use of query parallelization feature of kdb+(in conjunction with the -s command line argument)
+
+Maintenance Functions:
+.Q.en -
+The funtion is used to enumerat a table:
+.Q.en[`:directory;table]
+where:
+    directory is the home directory of historical database, where sym file is located
+    table is the table to be enumerated
+
 
 
