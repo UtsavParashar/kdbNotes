@@ -848,4 +848,39 @@ Unix ODBC:
 It is not possible to connect to a q process using ODBC from unix or linux as the ODBC driver provided from KX is for Windows only.
 Importing Data via ODBC:
 
+JDBC
+Other APIs - go through q for Mortals
+
+Tables on Disk:
+On disk tables also called historical databases can be saved to a disk as a flat file, splayed or partitioned.
+They are created by a q process that is created by a dictionary as argument or during startup it loads a directory using \l command. In this case the directory arguments is considered as the home directory of the database.
+
+NOTE: a historical database always changes the current directory to the home directory.
+At start up the home directory is analyzed to create the database schema: tables, variables, functions. It can contain:
+1. Flat file table: They are fully loaded into memory, that is why their size (memory footprint) should be small. Small size/configuration/keyed tables are suited for this type of table.
+2. Splayed Tables: They are not loaded into memory but their columns (which are files on disk) are mapped on demand when a query is executed against them. Their structure is suitable when queries don't touch all their columns, but only a restricted set, so only a sub set of files are accessed and loaded into memory. Medium sized tables are suitable for the table type. Also the ones that can't be partitioned according to the database partition rule.
+3. Partitions: They are special directories that contain tables split by certain criteria. Partitions can only be of the following type: date, month, year, int. The partition type is determined from the partition name format: eg 2008.06.10 - the type is date, 2008.06. the type is month, 2008 the type is year. One database can contain only one partition type at a time. Each table in a partition will have an extra virtual column with the same type and name as the partition type, and as value the partition name.
+
+Flat File Tables:
+Tables are saved on disk entirely in one file.
+The functions used to manipulate these tables are set/get:
+`:pathToFile/filename set tablename
+tablename get `:pathToFile/filename
+There are also some helper function defined in .q namespace for saving tables on disk to flat files. They both take one argument: a file path. The tablename is extracted from the path, so the table and the file on disk will have the same name.
+save `:path/tablename
+load `:path/tablename
+
+Splayed Tables:
+Splayed tables are saved on disk in a directory. Inside the directory each column is saved in a separate file under the same name as the column name. Each column is saved as a list of corresponding type in a kdb+ binary file. As a special case, a nested column is saved in two files, the second file has the same name as the column plus an extra "#" at the end.
+The order of the columns is saved in a separate file, called .d, in the same directory. .d is a kdb+ binary file containing a symbol list.
+A table can be saved as splayed using set command, as for flat files, but for the table to be saved as splayed the file path should end with a backslash:
+`:/pathtoFile/filename/ set tablename
+For reading a splayed table, the same get function can be used:
+tablename get `:pathtoFile/filename
+The functions rsave/rload are helper function for saving/loading a splayed table:
+rsave `:path/tablename
+rload `:path/tablename
+NOTE: For a table to be saved as splayed, it should be unkeyed and enumerated.
+
+
 
