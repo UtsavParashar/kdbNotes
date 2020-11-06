@@ -811,6 +811,41 @@ Functional Exec:
 A simplified version of functinal select is functional exec. An example of the easiest case(returning values of one of the columns )is:
 parse"exec b from t"
 ?[`t;();();enlist`b]
+In case of querying multiple columns and grouping result by another column the aggregate parameter has to be specified as a dictionary and the group of parameters as symbol atom:
+parse "exec b,c by a from t"
+?[`t;();`a;`b`c!`b`c]
 
+Functional Update:
+Another form of functional query is update which again is analogous to the functional select.
+parse "update a+3 from t where c=10*3"
+![`t;enlist (=;`c;(*;10j;3j));0b;(enlist `a)!enlist (+;`a;3j)]
+
+Functional Delete:
+The last case to consider is functional delete which is a simplified version of update.
+Its general form is:
+    ![t;c;0b;a]
+The aggregates argument(a) is a simple list of symbols with the names of columns to be removed:
+parse "delete a from t"
+![`t;();0b;enlist `a]
+
+The list of constraints(c), which has the same format as in functional select and update, chooses which rows will be removed.
+parse"delete from t where b=`g"
+![`t;enlist (=;`c;(*;10j;3j));0b;(enlist `a)!enlist (+;`a;3j)]
+
+ODBC:
+Since version 2.3 kdb+ has come with s.k which allows sql queries to be run on a q process. There is also a sample database created using sql statements in file sp.s (both s.k and sp.s should ne in QHOME)
+
+Any file with a .s extension is assumed to contain sql statements and can be loaded into a q session using \l.
+The use of sql from a q prompt prefix the line with s), in the same way as k code is run by prefixing the line with k.
+
+The default language from odbc or jbdc queries is sql and to run q directly over these interfaces the query needs to be prefixed with q).
+If possible, it is better to use kdbc (c.java, c.cs, c.c) described elsewhere instead of ODBC or JDBC. KDBC is faster and more general.
+
+Excel:
+The purpose of this section is to demonstrate how data may be extracted from kdb+ via ODBC into Excel. We outline how to set up a connection to existing q session and execute queries in both the SQL format and q syntax.
+
+Unix ODBC:
+It is not possible to connect to a q process using ODBC from unix or linux as the ODBC driver provided from KX is for Windows only.
+Importing Data via ODBC:
 
 
