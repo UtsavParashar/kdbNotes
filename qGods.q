@@ -941,6 +941,68 @@ Queries with Large Datasets:
 Useful Tips:
     When defining a db structure it is useful to note that the datatypes used in columns can have a profound effect on the memory consumption or your DB(and indeed its performance). Thus where possible use the real data type to represent money values and do not use symbols to represent non unique values (or nearly unique) columns. The latter will result in a bloated sym vector which must be loaded to memory on the load of any DB.
 
+Logging and Checkpointing:
+    Logging should be used to prevent loss of data from OLTP databases if server failure occurs.
 
+The command line argument -l or -L can be used to enable logging.
+    -l file should be used if you trust or duplicate the machine.
+    -L sync involves a disk write.
 
+All updates for clients will be logged. Updates from the local server will only be logged if they are sent as msgs using 0 as the handle.
+Example:
+    Launch q session and enable logging
+    q logExample -l
+    0"system \"l trade.q \""
+    \p 40000
+    /send update from client
+    h: hopen `:localhost:40000
+    h"insert[`trade](`GOOG;20.1;1000)"
+    h"trade"
+    /self update
+    0"insert[`trade](`y;50.0;2000)"
+    trade
 
+Replay Log:
+All updates have been written to a log file.
+ls
+logExample.log
+If the server fails now there is no data loss as any updates that were received can be obtained from the log.
+
+Checkpoints:
+The command
+\l - will create a .qdb file (if it doesn't already exist), checkpoint it and empty the log file.
+
+Files:
+There are a number of files that can be accessed for information after the process failure.
+Running the command
+q logExample -l
+will load in whichever of the files logExample.log currently exist. It is necessary to ensure that all these files are located in the same memory.
+
+Rollback:
+The -l\-L option is useful from transactional databases as if an error occurs it will trigger a rollback to the state before the error occured.
+
+Industry Best Practices:
+Common problems in a kdb+ system as well as some sample related solutions.
+
+Slow historical queries:
+If the speed of a common historical query is much slower today than yesterday, then there are several possible explanations. It is possible that there is a problem with last EOD execution on RDB process and the savedown to the HDB did not work correctly. The could cause a loss of attribute on the columns in the HDB.
+Say if the `p attribute is lost, then all queries on the trade table involving the sym in the where clause will be slower.
+Here is a function which will check if the p attribute is on the sym column of the input table name
+isSymP:{m:meta x; `p~m[`sym;`a]} /- here `a is for attribute ie tcba which is output of meta.
+t:([] sym:`GOOG`AMZN; px:10 20)
+update `p#sym from `t
+isSymP[`t] /- 1b
+
+If this function returns 0b that means there is no `p attr on the sym column of t table.
+
+Custom End of the Day Functionality:
+For those users of the tick product, u have noticed that the standard .u.end function on the vanilla RDB does not give us the flexibility to save down different tables on the disk in different format(splayed, data partitioned, single file). It may not be appropriate for your RDB to save down all tables in date partitioned format. For eg. if u have small keyed tables of the reference data, you probably will want to save these down as flat files.
+The following example uses a modified EOD function for an RDB with a trade, quote and corp_details tables. The corp_details table is a keyed table giving the full corporate name for each stock in the trade and quote tables. The .u.end uses .Q.dpft instead of .Q.hdpf because we can specify which tables are to be stored in partitioned format.
+n:100
+exs:`N`L`C
+syms:`GOOG`AMZN`IBM`MSFT
+trade:([] time:09:30:00.000+500*til n; sym:n?syms; size:n?10000; ex:n?exs)
+quote:([] time:09:30:00.000+500*til 1000; sym:1000?syms; ask:1000?100.; ask_size:1000?10000; bid:1000?100.; bid_size:1000?10000; ex:1000?exs)
+corp_details:([sym:syms] description:("Google";"Amazon";"IBM";"Microsoft"))
+
+hport:7002
