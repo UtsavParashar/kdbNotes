@@ -912,5 +912,35 @@ where:
     directory is the home directory of historical database, where sym file is located
     table is the table to be enumerated
 
+.Q.dpft:
+Used to save a table in a partition( in a kdb+ tick setup this is done from realtime database):
+.Q.dpft[`:directory;partition;field;table]
+where
+    directory is the home directory of the historical database where sym file is located
+    partition is the name of the partition(eg: a date: 2020.10.12)
+    field is the column to which a grouped index is applied
+    table is the table to be saved(should contain data only for the respective partition)
+
+.Q.chk -
+    Used to create empty tables (respecting the schema) in partitions where tables are missing
+    .Q.chk `:directory
+    where directory is the home directory of the historical database
+
+Memory Management:
+    The memory management in q is relatively straight forward. Most of the responsibility is removed from the user and a workspace, which may only grow in size is used to hold data. This workspace stores all in memory data and portions of this are used as a temporary workspace during functional calls. In memory, variables may be removed from the workspace or assigned to null values in order to freeup space in q sessions. However this does not mean that the memory has been returned to the operating system. Essentially memory is only returned to the OS when the individual q session in expired.
+
+Displing Memory Usage:
+    The memory usage of a q session can be displayed by executing the system command w. This will return a list of 4 integers which describe the current workspace memory usage. The first integer represents the current memory occuped by all the variables currently defined. The second represents the size of the current workspace and the last two numbers, the final integers shows the size of any mapped memory. This last number essentially relates to the size of the underlying db if it is relevant.
+
+Memory Allocation:
+    Memory is requested from the os at certain intervals when the session ascertains that it has insufficient memory to complete an execution. Thie request may come during the execution of a function or when the value of the difference between the first and the second numbers discussed goes above or below a certain threshold. At this point a new section of memory is requested from the OS and workspace expands. Broadly speaking the size of the individual elements inside a workspace should add up to approximately the first number returned from w however where tables have been defined this may not be the case as the memory associated with a table is allocated in discrete amounts when its size breaches certain thresholds.
+
+Queries with Large Datasets:
+    Generally speaking where possible it is not advised to bring large volumes of data into the workspace as this may cause a "wsfull" error and force q to exit. It is usually more efficient to structure queries so that smaller portions of data are processed at any single stage. This is most applicable to large tick dbs where reading an entire years quotes is not permissible with the underlying hardware. Thus where possible it is advised that queries should contain a constraint pertaining to the partitioned columns of a table.
+
+Useful Tips:
+    When defining a db structure it is useful to note that the datatypes used in columns can have a profound effect on the memory consumption or your DB(and indeed its performance). Thus where possible use the real data type to represent money values and do not use symbols to represent non unique values (or nearly unique) columns. The latter will result in a bloated sym vector which must be loaded to memory on the load of any DB.
+
+
 
 
