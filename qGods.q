@@ -1005,20 +1005,20 @@ trade:([] time:09:30:00.000+500*til n; sym:n?syms; size:n?10000; ex:n?exs)
 quote:([] time:09:30:00.000+500*til 1000; sym:1000?syms; ask:1000?100.; ask_size:1000?10000; bid:1000?100.; bid_size:1000?10000; ex:1000?exs)
 corp_details:([sym:syms] description:("Google";"Amazon";"IBM";"Microsoft"))
 
-hport:7002
+hport:7001
 hdb_dir:`:/Users/utsav/db_new
 flat_tbls:enlist `corp_details
 dp_tbls:`quote`trade
 splayed_tbls:()
 
-flat_save:{[tbl] (`$(string hdb_dir),"/",(string table))set value tbl}
-splayed_save:{[tbl] (`$(string hdb_dir),"/",(string table),"/")set value tbl}
+flat_save:{[tbl] (`$(string hdb_dir),"/",(string tbl))set value tbl}
+splayed_save:{[tbl] (`$(string hdb_dir),"/",(string tbl),"/")set value tbl}
 
 date_part_save:{[tbl;date].Q.dpft[hdb_dir;date;`sym;tbl]}
 .u.end:{[date] if[count flat_save each flat_tbls];if[count dp_tbls;date_part_save[;date]each dp_tbls]; if[count splayed_tbls;splayed_save each splayed_tbls]};
 .u.end[.z.d]
 
-This code can be found in the script eod.q. The result will be 2 date partitioned tables and 1 flat file.
+The result will be 2 date partitioned tables and 1 flat file.
 
 Corporate Actions:
 Prices and symbol names in historical trade and quote equity table will generally need to be adjusted for corporate actions such as dividends, stock splits and ticker name changes.
