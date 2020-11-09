@@ -1006,3 +1006,65 @@ quote:([] time:09:30:00.000+500*til 1000; sym:1000?syms; ask:1000?100.; ask_size
 corp_details:([sym:syms] description:("Google";"Amazon";"IBM";"Microsoft"))
 
 hport:7002
+hdb_dir:`:/Users/utsav/db_new
+flat_tbls:enlist `corp_details
+dp_tbls:`quote`trade
+splayed_tbls:()
+
+flat_save:{[tbl] (`$(string hdb_dir),"/",(string table))set value tbl}
+splayed_save:{[tbl] (`$(string hdb_dir),"/",(string table),"/")set value tbl}
+
+date_part_save:{[tbl;date].Q.dpft[hdb_dir;date;`sym;tbl]}
+.u.end:{[date] if[count flat_save each flat_tbls];if[count dp_tbls;date_part_save[;date]each dp_tbls]; if[count splayed_tbls;splayed_save each splayed_tbls]};
+.u.end[.z.d]
+
+This code can be found in the script eod.q. The result will be 2 date partitioned tables and 1 flat file.
+
+Corporate Actions:
+Prices and symbol names in historical trade and quote equity table will generally need to be adjusted for corporate actions such as dividends, stock splits and ticker name changes.
+One potential approach to this situation would be to update the prices/symbols in the on disk tables as corporate action occur.
+The other potential approach will be to leave the on disk data alone and instead take account of the corporate actions in your queries.
+The typical approach to the Corporate Action is the later.
+The following code deals with a company's stock ticker symbol changing through time.
+
+/mas contains the mappings through history of cusips to symbols
+/the underlying assumption is that a company cusip remains the same but its symbol changes. Therefore its cusip can be used as a unique identifier
+/rows can be in any order
+mas:([] cusip:`1`2`1`2; sym:`A`B`C`B; date:2020.10.27 2020.07.19 2020.04.10 2020.01.01)
+
+/smd is a keyed table mapping cusip and date to the symbol for that cusip on that date
+smd:select first sym by cusip, date from mas
+
+/ we are only interested in the rows of smd where the sym changes
+smd: select from smd where differ sym, (cusip=prev cusip)|cusip=next cusip
+
+/define a new column called mas which will contain the most recent symbol for each cusip
+smd: delete cusip from update mas:last sym by cusip from smd
+
+/dxy is a utility function
+dxy:{[d;x;y] first$[0>type x;d(x;y); flip d flip(keys d)!(x;y)]} / util
+
+/redefine smd and define a table msd. These tables will serve as lookups
+msd:`s#select by sym, date from smd; / mapping each sym/date pair to a mas
+smd:`s#select by mas, date from smd; / mapping each mas/date pair to a sym
+
+/SMD is a function that will return the symbol for a given mas on a given date
+/example usage: SMD[`A;2020.07.19]
+SMD:{x^dxy[smd;x;y]} / sym from mas and date
+
+/MSD is a function that will return the symbol for a given mas on a given date
+/example usage: MSD[`A;2020.07.19]
+MSD:{x^dxy[msd;x;y]} / mas from sym
+
+trade:([] date:asc 8?2020.01.01+til 365; sym:8?`A`B`C; time:8?17:00:00.000; price:8?100.; size:8?10000)
+date:exec date from trade
+
+/the function numtrades will return all trades for the for the master symbol on or after the first date in the mas table
+numtrades:{[m] raze{[s;d] select n:count i by date, sym:MSD[sym;first date] from trade where date=d, sym=s}'[SMD[count date]#m;date];date}
+/usage example - numtrades[`A]
+
+/This function is designed to return the total volume of trades per symbol in 5 mins bars across all dates in the trade table. It expects to receive as input the most up to date symbol name for a company's stock(mas)
+five_minute_bars:{[m] raze{[s;d] select sum size by date, sym:MSD[sym; first date], 5 xbar time.minute from trade where date=d, sym in s}'[SMD[count[date]#m;date]date]}
+usage example - five_minute_bars[`A]
+
+
