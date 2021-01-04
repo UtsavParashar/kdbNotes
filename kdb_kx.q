@@ -65,3 +65,12 @@ Storing and retrieving
 t:([] sym:`GOOG`AMZN`GOOG`FB; px:10 20 11 30)
 select from t where px=(max;px) fby sym
 select by sym from t where px=max select max px by sym from t
+
+Lists:
+A list is an ordered collection of atoms or other types including lists. A list is known as an array in other languages. Given that kdb+ is a column oriented db and that a column is a list, the list is of great importance in this technology.
+A one dimentional list is a collection of atom. Lists can be homogeneous or heterogeneous.
+Passing a list to the monadic 'type' function will reveal the data type of that list.
+Heterogeneous lists and multidimentional lists are always of type 0h.
+Lists of lists can be created as can lists of lists of lists etc.
+General syntax:
+The general syntax of defining a list is
