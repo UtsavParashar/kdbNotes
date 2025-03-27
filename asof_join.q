@@ -91,11 +91,3 @@ If further where constraints are used, the columns will be copied instead of map
 If you are using a database where an individual day’s data is spread over multiple partitions the on-disk p# will be lost when retrieving data with a constraint such as …date=2011.08.05. In this case you will have to reduce the number of quotes retrieved by applying further constraints – or by re-applying the attribute.
 
 
-
-
-
-
-
-
-
-
