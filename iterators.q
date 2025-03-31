@@ -193,3 +193,4 @@ q)ssr/["hello word.";("h";".";"rd");("H";"!";"rld")]
 q)ssr["abcd";"ab";"AB"]
 "ABcd"
 
+parscalsTriangle:{{(+)prior x,0}/[x;1]}
