@@ -15,17 +15,16 @@ trade:update price:price*1.1 from trade where sym=`AAPL
 / Print the updated table
 trade
 
-/ Difference between `peach` and `.Q.fc` in kdb:
-/ `peach`: Parallel each. It applies a function to each element of a list in parallel using multiple threads.
-/ `.Q.fc`: Concurrent function execution. It applies a function concurrently to a list of arguments, useful for batch processing.
 
-/ Example using `peach`
-resultPeach:{x*x} peach til 5  / Squares each number in parallel
+f: {x: asc x where x>0;  1+x?x}
 
-/ Example using `.Q.fc`
-resultFc:.Q.fc[{x*x}; til 5]  / Squares each number concurrently
+f: {if[all x<1;:1]; x: asc x where x>0;  b:1+first where not x=1+til count x; $[0N=b;1+last x;b]}
+fn: {b: where not x=1+til count x; $[count b; 1+first b; 1+count x]}
 
-/ Print results
-resultPeach
-resultFc
 
+f:{(1+til count x) = asc x where x > 0}
+
+fn:{min(1+0|1 + til count x)except x}
+
+
+exdata:(syms;count[syms]#101 102 103 104;count[syms]#`LSE`NDQ`HKSE`TSE;count[syms]#`GB`US`HK`JP )
