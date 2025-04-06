@@ -28,3 +28,7 @@ fn:{min(1+0|1 + til count x)except x}
 
 
 exdata:(syms;count[syms]#101 102 103 104;count[syms]#`LSE`NDQ`HKSE`TSE;count[syms]#`GB`US`HK`JP )
+
+"8=FIX.4.4|9=178|35=8|49=A|56=B|1=accountA|6=229.6295|11=00000001|12=|13=|14=10000|15=GBp|17=100000005|19=|21=1|29=1|30=XLON|31=229.1|32=1850|37=|38=10000|39=2|41=|44=|48=VOD.L|50=AB|52=20131218-09:01:46|54=1|55=VOD|58=|59=1|60=20131218-09:01:46|10=197"
+
+fixTbl:(uj/){flip fixTagToName[key d]!value enlist each d:getAllTags x} each fixMsgs
